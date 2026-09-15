@@ -65,15 +65,37 @@ jobs:
             );
           "
 
-      - name: Commit updated count
+      - name: Update automated check date
+        run: |
+          today=$(date -u +"%-d %B %Y")
+          TODAY="$today" node <<'NODE'
+          const fs = require('fs');
+          const path = 'README.md';
+          const marker = '**Last automated Piniverse check:**';
+          const line = `${marker} ${process.env.TODAY}`;
+          let readme = fs.readFileSync(path, 'utf8');
+
+          if (readme.includes(marker)) {
+            readme = readme.replace(/^\*\*Last automated Piniverse check:\*\*.*$/m, line);
+          } else {
+            readme = readme.replace(
+              'This repository contains the live production version of the site.',
+              `This repository contains the live production version of the site.\n\n${line}`
+            );
+          }
+
+          fs.writeFileSync(path, readme);
+          NODE
+
+      - name: Commit automated updates
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          if git diff --quiet -- .piniverse-state.json; then
-            echo "Count has not changed."
+          if git diff --quiet -- .piniverse-state.json README.md; then
+            echo "No automated updates to commit."
           else
-            git add .piniverse-state.json
-            git commit -m "Update Piniverse progress state"
+            git add .piniverse-state.json README.md
+            git commit -m "Update Piniverse automated state"
             git push
           fi
