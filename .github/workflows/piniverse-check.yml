@@ -67,7 +67,7 @@ jobs:
 
       - name: Update automated check date
         run: |
-          today=$(date -u +"%-d %B %Y")
+          today=$(TZ=Europe/London date +"%-d %B %Y")
           TODAY="$today" node <<'NODE'
           const fs = require('fs');
           const path = 'README.md';
